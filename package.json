@@ -1,15 +1,19 @@
 {
   "name": "webpack-auto-external",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.1",
+  "private": false,
+  "main": "dist/webpack-auto-external.umd.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build-bundle": "vue-cli-service build --mode production --target lib ./src/lib/index.js --report",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^2.6.11"
+    "lodash": "^4.17.19",
+    "vue": "^2.6.11",
+    "webpack": "^4.44.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.4.0",

@@ -4,3 +4,7 @@ public
 src
 babel.config.js
 package-lock.json
+vue.config.js
+doc.md
+*.html
+*.js.map
