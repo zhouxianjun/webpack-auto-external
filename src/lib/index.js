@@ -34,7 +34,7 @@ class AutoExternalPlugin {
         // 判断是否有排除标记，如有则排除
         if (this.externalModules[value]) {
           const { varName } = this.externals[value];
-          callback(null, new ExternalModules(varName, 'window'));
+          callback(null, new ExternalModules(varName, 'window', value));
         } else {
           factory(data, callback);
         }
