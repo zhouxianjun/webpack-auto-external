@@ -8,11 +8,13 @@ class AutoExternalPlugin {
    * @param externals 外部扩展（CDN）配置:\{lodash: {varName: '_', url: '', css: ''}\}
    * @param sortJs js排序（Object.keys(externals)）
    * @param sortCss css排序（[css]）
+   * @param getTagAttrs
    */
-  constructor ({ externals = {}, sortJs = list => list, sortCss = list => list } = {}) {
+  constructor ({ externals = {}, sortJs = list => list, sortCss = list => list, getTagAttrs } = {}) {
     this.externals = externals;
     this.sortJs = sortJs;
     this.sortCss = sortCss;
+    this.getTagAttrs = typeof getTagAttrs === 'function' ? getTagAttrs : () => ({});
     this.externalModules = {};
   }
 
@@ -52,13 +54,19 @@ class AutoExternalPlugin {
     });
   }
 
+  getAttributes (url) {
+    const attrs = this.getTagAttrs(url);
+    return typeof attrs === 'object' && !Array.isArray(attrs) ? attrs : {};
+  }
+
   processJsTags (compilation, htmlPluginData, value) {
     return {
       tagName: 'script',
       closeTag: true,
       attributes: {
         type: 'text/javascript',
-        src: value
+        src: value,
+        ...this.getAttributes(value)
       }
     };
   }
@@ -68,7 +76,8 @@ class AutoExternalPlugin {
       tagName: 'link',
       attributes: {
         rel: 'stylesheet',
-        href: value
+        href: value,
+        ...this.getAttributes(value)
       }
     };
   }

@@ -16,6 +16,7 @@
 | externals | 外部扩展（CDN）配置:\{lodash: {varName: '_', url: '', css: ''}\} |
 | sortJs | js排序（Object.keys(externals)） |
 | sortCss | css排序（[css]） |
+| getTagAttrs | tag额外属性（url） |
 
 ## 使用
 
