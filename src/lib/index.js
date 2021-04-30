@@ -101,7 +101,7 @@ class AutoExternalPlugin {
 
   addJs (keys, compilation, htmlPluginData) {
     const tags = keys.map(key => this.processJsTags(compilation, htmlPluginData, this.externals[key].url));
-    htmlPluginData.body.unshift(...tags);
+    (htmlPluginData.body || htmlPluginData.bodyTags).unshift(...tags);
   }
 
   getCssKeys (keys) {
@@ -113,7 +113,7 @@ class AutoExternalPlugin {
 
   addCss (keys, compilation, htmlPluginData) {
     const tags = keys.map(key => this.processCssTags(compilation, htmlPluginData, key));
-    htmlPluginData.head.push(...tags);
+    (htmlPluginData.head || htmlPluginData.headTags).push(...tags);
   }
 }
 
