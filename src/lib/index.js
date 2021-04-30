@@ -46,8 +46,7 @@ class AutoExternalPlugin {
     });
     compiler.hooks.compilation.tap('InlinePlugin', (compilation) => {
       compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(PluginName, (htmlPluginData, callback) => {
-        const keys = Object.keys(this.externals).filter(key => this.externalModules[key]);
-        keys.push(...this.required);
+        const keys = Object.keys(this.externals).filter(key => this.externalModules[key] || this.required.includes(key));
         const jsKeys = this.sortJs(keys);
         this.addJs(jsKeys, compilation, htmlPluginData);
         const cssKeys = this.sortCss(this.getCssKeys(keys));
