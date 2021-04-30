@@ -2,7 +2,7 @@
   "name": "webpack-auto-external",
   "version": "0.1.4",
   "private": false,
-  "main": "dist/webpack-auto-external.umd.min.js",
+  "main": "dist/webpack-auto-external.common.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

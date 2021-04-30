@@ -8,12 +8,14 @@ class AutoExternalPlugin {
    * @param externals 外部扩展（CDN）配置:\{lodash: {varName: '_', url: '', css: ''}\}
    * @param sortJs js排序（Object.keys(externals)）
    * @param sortCss css排序（[css]）
+   * @param required
    * @param getTagAttrs
    */
-  constructor ({ externals = {}, sortJs = list => list, sortCss = list => list, getTagAttrs } = {}) {
+  constructor ({ externals = {}, sortJs = list => list, sortCss = list => list, required, getTagAttrs } = {}) {
     this.externals = externals;
     this.sortJs = sortJs;
     this.sortCss = sortCss;
+    this.required = required || [];
     this.getTagAttrs = typeof getTagAttrs === 'function' ? getTagAttrs : () => ({});
     this.externalModules = {};
   }
@@ -45,6 +47,7 @@ class AutoExternalPlugin {
     compiler.hooks.compilation.tap('InlinePlugin', (compilation) => {
       compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(PluginName, (htmlPluginData, callback) => {
         const keys = Object.keys(this.externals).filter(key => this.externalModules[key]);
+        keys.push(...this.required);
         const jsKeys = this.sortJs(keys);
         this.addJs(jsKeys, compilation, htmlPluginData);
         const cssKeys = this.sortCss(this.getCssKeys(keys));
