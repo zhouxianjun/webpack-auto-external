@@ -1,5 +1,6 @@
 const ExternalModules = require('webpack/lib/ExternalModule');
 const PluginName = 'AutoExternalPlugin';
+const assert = require('assert');
 const { flattenDeep } = require('lodash');
 
 class AutoExternalPlugin {
@@ -45,15 +46,29 @@ class AutoExternalPlugin {
       });
     });
     compiler.hooks.compilation.tap('InlinePlugin', (compilation) => {
-      compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(PluginName, (htmlPluginData, callback) => {
-        const keys = Object.keys(this.externals).filter(key => this.externalModules[key] || this.required.includes(key));
-        const jsKeys = this.sortJs(keys);
-        this.addJs(jsKeys, compilation, htmlPluginData);
-        const cssKeys = this.sortCss(this.getCssKeys(keys));
-        this.addCss(cssKeys, compilation, htmlPluginData);
-        callback(null, htmlPluginData);
-      });
+      let hook = compilation.hooks.htmlWebpackPluginAlterAssetTags;
+
+      // 支持v4
+      if (!hook) {
+        const [HtmlWebpackPlugin] = compiler.options.plugins.filter(
+          (plugin) => plugin.constructor.name === 'HtmlWebpackPlugin');
+        if (!HtmlWebpackPlugin) {
+          assert(HtmlWebpackPlugin, 'Unable to find an instance of HtmlWebpackPlugin in the current compilation.');
+          return;
+        }
+        hook = HtmlWebpackPlugin.constructor.getHooks(compilation).alterAssetTagGroups;
+      }
+      hook.tapAsync(PluginName, (htmlPluginData, callback) => callback(null, this.processPluginData(compilation, htmlPluginData)));
     });
+  }
+
+  processPluginData (compilation, htmlPluginData) {
+    const keys = Object.keys(this.externals).filter(key => this.externalModules[key] || this.required.includes(key));
+    const jsKeys = this.sortJs(keys);
+    this.addJs(jsKeys, compilation, htmlPluginData);
+    const cssKeys = this.sortCss(this.getCssKeys(keys));
+    this.addCss(cssKeys, compilation, htmlPluginData);
+    return htmlPluginData;
   }
 
   getAttributes (url) {
