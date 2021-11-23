@@ -37,7 +37,7 @@ class AutoExternalPlugin {
         const dependencies = data.dependencies;
         const value = dependencies[0].request;
         // 判断是否有排除标记，如有则排除
-        if (this.externalModules[value] || (this.externals[value] || this.required.includes(value))) {
+        if (this.externalModules[value] || (this.externals[value] && this.required.includes(value))) {
           const { varName } = this.externals[value];
           callback(null, new ExternalModules(varName, 'window', value));
         } else {
