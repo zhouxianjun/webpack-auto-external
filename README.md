@@ -11,12 +11,13 @@
 自动CDN插件构造函数
 
 
-| Param | Description |
-| --- | --- |
-| externals | 外部扩展（CDN）配置:\{lodash: {varName: '_', url: '', css: ''}\} |
-| sortJs | js排序（Object.keys(externals)） |
-| sortCss | css排序（[css]） |
-| getTagAttrs | tag额外属性（url） |
+| Param | Description                                                |
+| --- |------------------------------------------------------------|
+| externals | 外部扩展（CDN）配置:\{lodash: {varName: '_', url: '', css: ''}\}   |
+| sortJs | js排序（Object.keys(externals)）                               |
+| sortCss | css排序（[css]）                                               |
+| getTagAttrs | tag额外属性（url）                                               |
+| checkIgnore | 回调函数，返回true则忽略扩展，返回ExternalModules则使用该扩展，返回false则使用该插件默认判断 |
 
 ## 使用
 

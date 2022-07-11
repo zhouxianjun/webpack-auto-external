@@ -11,14 +11,16 @@ class AutoExternalPlugin {
    * @param sortCss css排序（[css]）
    * @param required
    * @param getTagAttrs
+   * @param checkIgnore
    */
-  constructor ({ externals = {}, sortJs = list => list, sortCss = list => list, required, getTagAttrs } = {}) {
+  constructor ({ externals = {}, sortJs = list => list, sortCss = list => list, required, getTagAttrs, checkIgnore } = {}) {
     this.externals = externals;
     this.sortJs = sortJs;
     this.sortCss = sortCss;
     this.required = required || [];
     this.getTagAttrs = typeof getTagAttrs === 'function' ? getTagAttrs : () => ({});
     this.externalModules = {};
+    this.checkIgnore = typeof checkIgnore === 'function' ? checkIgnore : () => false;
   }
 
   apply (compiler) {
@@ -37,12 +39,21 @@ class AutoExternalPlugin {
         const dependencies = data.dependencies;
         const value = dependencies[0].request;
         // 判断是否有排除标记，如有则排除
-        if (this.externalModules[value] || (this.externals[value] && this.required.includes(value))) {
-          const { varName } = this.externals[value];
-          callback(null, new ExternalModules(varName, 'window', value));
-        } else {
+        const checkResult = this.checkIgnore(data, value, this.externals, this.externalModules, this.required);
+        if (checkResult === true) {
           factory(data, callback);
+          return;
         }
+        if (!checkResult) {
+          if (this.externalModules[value] || (this.externals[value] && this.required.includes(value))) {
+            const { varName } = this.externals[value];
+            callback(null, new ExternalModules(varName, 'window', value));
+            return;
+          }
+          factory(data, callback);
+          return;
+        }
+        callback(null, checkResult);
       });
     });
     compiler.hooks.compilation.tap('InlinePlugin', (compilation) => {
