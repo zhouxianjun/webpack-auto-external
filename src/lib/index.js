@@ -119,7 +119,7 @@ class AutoExternalPlugin {
             document.head.appendChild(script);
 
             var cssList = Array.isArray(item.css) ? item.css : [item.css];
-            if (cssList.length) {
+            if (cssList.length && cssList[0]) {
               for (cssUrl of cssList) {
                 var css = document.querySelector('link[rel=stylesheet][href="' + cssUrl + '"]');
                 if (!css) {
