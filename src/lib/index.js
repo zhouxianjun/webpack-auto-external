@@ -93,20 +93,47 @@ class AutoExternalPlugin {
             if (!item) {
               return reject(new Error('cdn 「' + name + '」 is not config'));
             }
-            var script = document.querySelector('script[data-cdnmodule=' + name + ']');
+            var all = [];
+            function success() {
+              resolve(window[item.varName || name]);
+            }
+            function loaded(url) {
+              var index = all.indexOf(url);
+              index != -1 && all.splice(index, 1);
+              all.length || success();
+            }
+            var script = document.querySelector('script[data-cdnmodule="' + name + '"]');
             if (script) {
-              return resolve(window[item.varName || name]);
+              return success();
             }
             script = document.createElement('script');
             script.src = item.url;
             script.dataset.cdnmodule = name;
-            script.onload = function () {
-              resolve(window[item.varName || name]);
+            script.onload = function() {
+              loaded(item.url);
             }
             script.onerror = function (e) {
               reject(new Error('cdn 「' + name + '」 load error', e));
             }
+            all.push(item.url);
             document.head.appendChild(script);
+
+            var cssList = Array.isArray(item.css) ? item.css : [item.css];
+            if (cssList.length) {
+              for (cssUrl of cssList) {
+                var css = document.querySelector('link[rel=stylesheet][href="' + cssUrl + '"]');
+                if (!css) {
+                  css = document.createElement('link');
+                  css.href = cssUrl;
+                  css.rel = 'stylesheet';
+                  css.onload = css.onerror = function () {
+                    loaded(cssUrl);
+                  }
+                  all.push(cssUrl);
+                  document.head.appendChild(css);
+                }
+              }
+            }
           });
         }
       `
