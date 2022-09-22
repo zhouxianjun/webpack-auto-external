@@ -79,6 +79,38 @@ class AutoExternalPlugin {
     this.addJs(jsKeys, compilation, htmlPluginData);
     const cssKeys = this.sortCss(this.getCssKeys(keys));
     this.addCss(cssKeys, compilation, htmlPluginData);
+    (htmlPluginData.head || htmlPluginData.headTags).push({
+      tagName: 'script',
+      closeTag: true,
+      attributes: {
+        type: 'text/javascript'
+      },
+      innerHTML: `
+        window.externalsCDN = ${JSON.stringify(this.externals)};
+        window.importByCDN = function (name) {
+          return new Promise(function (resolve, reject) {
+            var item = window.externalsCDN[name];
+            if (!item) {
+              return reject(new Error('cdn 「' + name + '」 is not config'));
+            }
+            var script = document.querySelector('script[data-cdnmodule=' + name + ']');
+            if (script) {
+              return resolve(window[item.varName || name]);
+            }
+            script = document.createElement('script');
+            script.src = item.url;
+            script.dataset.cdnmodule = name;
+            script.onload = function () {
+              resolve(window[item.varName || name]);
+            }
+            script.onerror = function (e) {
+              reject(new Error('cdn 「' + name + '」 load error', e));
+            }
+            document.head.appendChild(script);
+          });
+        }
+      `
+    });
     return htmlPluginData;
   }
 
@@ -87,14 +119,15 @@ class AutoExternalPlugin {
     return typeof attrs === 'object' && !Array.isArray(attrs) ? attrs : {};
   }
 
-  processJsTags (compilation, htmlPluginData, value) {
+  processJsTags (compilation, htmlPluginData, item, key) {
     return {
       tagName: 'script',
       closeTag: true,
       attributes: {
         type: 'text/javascript',
-        src: value,
-        ...this.getAttributes(value)
+        src: item.url,
+        'data-cdnmodule': key,
+        ...this.getAttributes(item.url, item)
       }
     };
   }
@@ -111,7 +144,7 @@ class AutoExternalPlugin {
   }
 
   addJs (keys, compilation, htmlPluginData) {
-    const tags = keys.map(key => this.processJsTags(compilation, htmlPluginData, this.externals[key].url));
+    const tags = keys.map(key => this.processJsTags(compilation, htmlPluginData, this.externals[key], key));
     (htmlPluginData.body || htmlPluginData.bodyTags).unshift(...tags);
   }
 
