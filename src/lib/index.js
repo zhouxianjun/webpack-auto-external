@@ -108,9 +108,10 @@ class AutoExternalPlugin {
             }
             script = document.createElement('script');
             script.src = item.url;
+            script.setAttribute('ignore', true);
             script.dataset.cdnmodule = name;
             script.onload = function() {
-              loaded(item.url);
+              loaded(this.src);
             }
             script.onerror = function (e) {
               reject(new Error('cdn 「' + name + '」 load error', e));
@@ -126,8 +127,9 @@ class AutoExternalPlugin {
                   css = document.createElement('link');
                   css.href = cssUrl;
                   css.rel = 'stylesheet';
+                  css.setAttribute('ignore', true);
                   css.onload = css.onerror = function () {
-                    loaded(cssUrl);
+                    loaded(this.href);
                   }
                   all.push(cssUrl);
                   document.head.appendChild(css);
