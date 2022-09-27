@@ -87,57 +87,62 @@ class AutoExternalPlugin {
       },
       innerHTML: `
         window.externalsCDN = ${JSON.stringify(this.externals)};
+        window.importCDNPromise = {};
         window.importByCDN = function (name) {
-          return new Promise(function (resolve, reject) {
-            var item = window.externalsCDN[name];
-            if (!item) {
-              return reject(new Error('cdn 「' + name + '」 is not config'));
-            }
-            var all = [];
-            function success() {
-              resolve(window[item.varName || name]);
-            }
-            function loaded(url) {
-              var index = all.indexOf(url);
-              index != -1 && all.splice(index, 1);
-              all.length || success();
-            }
-            var script = document.querySelector('script[data-cdnmodule="' + name + '"]');
-            if (script) {
-              return success();
-            }
-            script = document.createElement('script');
-            script.src = item.url;
-            script.setAttribute('ignore', true);
-            script.dataset.cdnmodule = name;
-            script.onload = function() {
-              loaded(this.src);
-            }
-            script.onerror = function (e) {
-              reject(new Error('cdn 「' + name + '」 load error', e));
-            }
-            all.push(item.url);
-            document.head.appendChild(script);
+          var p = window.importCDNPromise[name];
+          if (!p) {
+            p = new Promise(function (resolve, reject) {
+              var item = window.externalsCDN[name];
+              if (!item) {
+                return reject(new Error('cdn 「' + name + '」 is not config'));
+              }
+              var all = [];
+              function success() {
+                resolve(window[item.varName || name]);
+              }
+              function loaded(url) {
+                var index = all.indexOf(url);
+                index != -1 && all.splice(index, 1);
+                all.length || success();
+              }
+              var script = document.querySelector('script[data-cdnmodule="' + name + '"]');
+              if (script) {
+                return success();
+              }
+              script = document.createElement('script');
+              script.setAttribute('ignore', true);
+              script.dataset.cdnmodule = name;
+              script.onload = function() {
+                loaded(this.src);
+              }
+              script.onerror = function (e) {
+                reject(new Error('cdn 「' + name + '」 load error', e));
+              }
+              script.src = item.url;
+              all.push(item.url);
+              document.head.appendChild(script);
 
-            var cssList = Array.isArray(item.css) ? item.css : [item.css];
-            if (cssList.length && cssList[0]) {
-              for (cssUrl of cssList) {
-                var css = document.querySelector('link[rel=stylesheet][href="' + cssUrl + '"]');
-                if (!css) {
-                  css = document.createElement('link');
-                  css.href = cssUrl;
-                  css.rel = 'stylesheet';
-                  css.setAttribute('ignore', true);
-                  css.onload = css.onerror = function () {
-                    loaded(this.href);
+              var cssList = Array.isArray(item.css) ? item.css : [item.css];
+              if (cssList.length && cssList[0]) {
+                for (cssUrl of cssList) {
+                  var css = document.querySelector('link[rel=stylesheet][href="' + cssUrl + '"]');
+                  if (!css) {
+                    css = document.createElement('link');
+                    css.rel = 'stylesheet';
+                    css.setAttribute('ignore', true);
+                    css.onload = css.onerror = function () {
+                      loaded(this.href);
+                    }
+                    css.href = cssUrl;
+                    all.push(cssUrl);
+                    document.head.appendChild(css);
                   }
-                  all.push(cssUrl);
-                  document.head.appendChild(css);
                 }
               }
-            }
-          });
-        }
+            });
+          }
+          return p;
+        };
       `
     });
     return htmlPluginData;
