@@ -1,6 +1,6 @@
 {
   "name": "webpack-auto-external",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "private": false,
   "main": "dist/webpack-auto-external.common.js",
   "scripts": {
