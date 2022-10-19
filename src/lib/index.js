@@ -96,6 +96,8 @@ class AutoExternalPlugin {
               if (!item) {
                 return reject(new Error('cdn 「' + name + '」 is not config'));
               }
+              item.url = /[a-zA-z]+:\\/\\/[^\\s]*/.test(item.url) ? item.url : window.location.origin + '/' + item.url;
+              item.url = item.url.replace(/[/]+[/]/g,'/').replace(':/','://');
               var all = [];
               function success() {
                 resolve(window[item.varName || name]);
