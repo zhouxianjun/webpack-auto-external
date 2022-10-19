@@ -144,6 +144,7 @@ class AutoExternalPlugin {
                 }
               }
             });
+            window.importCDNPromise[name] = p;
           }
           return p;
         };
