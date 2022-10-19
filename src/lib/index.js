@@ -127,6 +127,8 @@ class AutoExternalPlugin {
               var cssList = Array.isArray(item.css) ? item.css : [item.css];
               if (cssList.length && cssList[0]) {
                 for (cssUrl of cssList) {
+                  cssUrl = /[a-zA-z]+:\\/\\/[^\\s]*/.test(cssUrl) ? cssUrl : window.location.origin + '/' + cssUrl;
+                  cssUrl = cssUrl.replace(/[/]+[/]/g,'/').replace(':/','://');
                   var css = document.querySelector('link[rel=stylesheet][href="' + cssUrl + '"]');
                   if (!css) {
                     css = document.createElement('link');
